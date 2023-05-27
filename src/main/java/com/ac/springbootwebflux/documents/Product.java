@@ -13,6 +13,16 @@ public class Product {
     private Double price;
     private Date createAt;
 
+//    Se crea un constructor vacio para que Spring data cree los objetos vacios al iniciar
+
+    public Product() {
+    }
+
+    public Product(String name, Double price) {
+        this.name = name;
+        this.price = price;
+    }
+
     public String getId() {
         return id;
     }
