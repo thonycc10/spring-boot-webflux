@@ -4,11 +4,14 @@ import com.ac.springbootwebflux.documents.Product;
 import com.ac.springbootwebflux.services.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -23,7 +26,7 @@ public class ProductController {
         this.service = service;
     }
 
-    @GetMapping({"/listar", "/"})
+    @GetMapping({"/list", "/"})
     public String list(Model model) {
         Flux<Product> products = service.findAllWithNameUpperCase();
 
@@ -33,6 +36,23 @@ public class ProductController {
         model.addAttribute("title", "List products");
 
         return "list";
+    }
+
+    @GetMapping("/form")
+    public Mono<String> createView(Model model) {
+        model.addAttribute("product", new Product());
+        model.addAttribute("title", "Form Product");
+
+        return Mono.just("form");
+    }
+
+    @PostMapping("/form")
+    public Mono<String> save(Product product) {
+        return service.save(product)
+                .doOnNext(prod -> {
+                    log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
+                })
+                .thenReturn("redirecct:/list");
     }
 
     @GetMapping("/datadriver")
