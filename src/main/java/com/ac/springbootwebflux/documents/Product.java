@@ -21,6 +21,7 @@ public class Product {
     private Date createAt;
     @Valid
     private Category category;
+    private String picture;
 
 //    Se crea un constructor vacio para que Spring data cree los objetos vacios al iniciar
 
@@ -38,6 +39,14 @@ public class Product {
 
     public String getId() {
         return id;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public void setId(String id) {

@@ -10,7 +10,7 @@
 <div>
     <a th:href="@{/list}">Return</a>
     <!--    form>(div>label+div>input)*4-->
-    <form th:action="@{/form}" method="post" th:object="${product}">
+    <form th:action="@{/form}" method="post" th:object="${product}" enctype="multipart/form-data">
         <!--        en ves de usar esto usa el @SessionAttributes("product") e y si usas esto @GetMapping("/form/v2/{idProduct} activa esto")-->
         <!--        <input type="hidden" th:if="${product.id != null}" th:field="*{id}" >-->
         <div><label for="name">Name</label>
@@ -40,6 +40,10 @@
                 </select>
             </div>
             <span style="color: red" th:if="${#fields.hasErrors('category.id')}" th:errors="*{category.id}"></span>
+        </div>
+        <div>
+            <label for="file">Picture</label>
+            <div><input id="file" name="file" type="file"></div>
         </div>
         <div>
             <div><input type="submit" th:value="${btnSumit}"></div>
