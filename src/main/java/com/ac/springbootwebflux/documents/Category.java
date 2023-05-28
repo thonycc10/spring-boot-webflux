@@ -1,9 +1,11 @@
 package com.ac.springbootwebflux.documents;
 
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.data.annotation.Id;
 
 public class Category {
     @Id
+    @NotEmpty
     private String id;
     private String name;
 

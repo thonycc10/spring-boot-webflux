@@ -32,7 +32,7 @@
             <label for="category.id">Category</label>
             <div>
                 <select id="category.id" th:field="*{category.id}">
-                    <option selected disabled value="">-- Select --</option>
+                    <option value="">-- Select --</option>
                     <option th:each="categorie: ${categories}"
                             th:value="${categorie.id}"
                             th:text="${categorie.name}">

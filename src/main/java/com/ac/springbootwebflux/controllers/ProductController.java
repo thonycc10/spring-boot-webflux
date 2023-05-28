@@ -100,11 +100,20 @@ public class ProductController {
             return Mono.just("form");
         } else {
             sessionStatus.isComplete();
-            if (product.getCreateAt() == null) {
-                product.setCreateAt(new Date());
-            }
-            return service.save(product).doOnNext(prod -> {
-                log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
+
+            Mono<Category> category = categoryService.findBiId(product.getCategory().getId());
+
+            return category.flatMap(c -> {
+                if (product.getCreateAt() == null) {
+                    product.setCreateAt(new Date());
+                }
+                product.setCategory(c);
+                return service.save(product);
+            }).doOnNext(p -> {
+                log.info(String.format("Product saved: %1$s, id: %2$s and Category: %3$s",
+                        p.getName(),
+                        p.getId(),
+                        p.getCategory().getName()));
             }).thenReturn("redirect:/list?success=product+success");
         }
     }

@@ -1,5 +1,6 @@
 package com.ac.springbootwebflux.documents;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
@@ -18,7 +19,7 @@ public class Product {
     private Double price;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date createAt;
-
+    @Valid
     private Category category;
 
 //    Se crea un constructor vacio para que Spring data cree los objetos vacios al iniciar
