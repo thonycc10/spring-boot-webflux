@@ -54,4 +54,18 @@ public class ProductController {
 
         return "list";
     }
+
+    @GetMapping("/list-full")
+    public String listFull(Model model) {
+        Flux<Product> products = dao.findAll()
+                .map(product -> {
+                    product.setName(product.getName().toUpperCase());
+                    return product;
+                }).repeat(5000);
+
+        model.addAttribute("products", products);
+        model.addAttribute("title", "List products");
+
+        return "list";
+    }
 }
