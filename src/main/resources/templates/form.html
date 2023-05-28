@@ -16,17 +16,30 @@
         <div><label for="name">Name</label>
             <div>
                 <input id="name" type="text" th:field="*{name}">
-                <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
             </div>
+            <span style="color: red" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
         </div>
         <div><label for="price">Price</label>
             <div>
                 <input id="price" type="number" th:field="*{price}">
-                <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
             </div>
+            <span style="color: red" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
         </div>
         <div><label for="createAt">Create At.</label>
             <div><input id="createAt" type="date" th:field="*{createAt}"></div>
+        </div>
+        <div>
+            <label for="category.id">Category</label>
+            <div>
+                <select id="category.id" th:field="*{category.id}">
+                    <option selected disabled value="">-- Select --</option>
+                    <option th:each="categorie: ${categories}"
+                            th:value="${categorie.id}"
+                            th:text="${categorie.name}">
+                    </option>
+                </select>
+            </div>
+            <span style="color: red" th:if="${#fields.hasErrors('category.id')}" th:errors="*{category.id}"></span>
         </div>
         <div>
             <div><input type="submit" th:value="${btnSumit}"></div>
