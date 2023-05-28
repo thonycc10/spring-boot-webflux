@@ -19,6 +19,8 @@ public class Product {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date createAt;
 
+    private Category category;
+
 //    Se crea un constructor vacio para que Spring data cree los objetos vacios al iniciar
 
     public Product() {
@@ -27,6 +29,10 @@ public class Product {
     public Product(String name, Double price) {
         this.name = name;
         this.price = price;
+    }
+    public Product(String name, Double price, Category category) {
+        this(name, price);
+        this.category = category;
     }
 
     public String getId() {
@@ -59,5 +65,13 @@ public class Product {
 
     public void setCreateAt(Date createAt) {
         this.createAt = createAt;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }
