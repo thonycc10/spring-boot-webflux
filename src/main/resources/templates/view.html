@@ -16,6 +16,13 @@
         <li th:text="'Date Create:' + ${#calendars.format(product.createAt, 'dd/MM/yyyy')}"></li>
     </ul>
 </div>
+<div>
+    <img th:if="${product.picture != null && #strings.length(product.picture)>0}"
+         th:src="@{/uploads/img/} + ${product.picture}"
+         th:alt="${product.name}"
+        style="max-width: 25%"
+    >
+</div>
 
 </body>
 </html>
