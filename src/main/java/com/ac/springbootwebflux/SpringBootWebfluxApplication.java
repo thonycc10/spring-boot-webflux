@@ -1,7 +1,9 @@
 package com.ac.springbootwebflux;
 
-import com.ac.springbootwebflux.dao.ProductDao;
+import com.ac.springbootwebflux.documents.Category;
 import com.ac.springbootwebflux.documents.Product;
+import com.ac.springbootwebflux.services.CategoryService;
+import com.ac.springbootwebflux.services.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,13 +17,15 @@ import java.util.Date;
 @SpringBootApplication
 public class SpringBootWebfluxApplication implements CommandLineRunner {
 
-    private final ProductDao dao;
+    private final ProductService service;
+    private final CategoryService categoryService;
     private final ReactiveMongoTemplate reactiveMongoTemplate;
 
-    private static  final Logger log = LoggerFactory.getLogger(SpringBootWebfluxApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(SpringBootWebfluxApplication.class);
 
-    public SpringBootWebfluxApplication(ProductDao dao, ReactiveMongoTemplate reactiveMongoTemplate) {
-        this.dao = dao;
+    public SpringBootWebfluxApplication(ProductService service, CategoryService categoryService, ReactiveMongoTemplate reactiveMongoTemplate) {
+        this.service = service;
+        this.categoryService = categoryService;
         this.reactiveMongoTemplate = reactiveMongoTemplate;
     }
 
@@ -33,16 +37,33 @@ public class SpringBootWebfluxApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // ejemplo de como eliminar data solo usar en ejemplos no en PROD
         reactiveMongoTemplate.dropCollection("products").subscribe();
+        reactiveMongoTemplate.dropCollection("category").subscribe();
 
-        Flux.just(new Product("Laptop1", 100.10),
-                        new Product("Laptop2", 200.10),
-                        new Product("Laptop3", 300.10),
-                        new Product("Laptop4", 400.10),
-                        new Product("Laptop5", 500.10)
-                ).flatMap(product -> {
-                    product.setCreateAt(new Date());
-                    return dao.save(product);
-                })
-                .subscribe(product -> log.info("Insert -> id: " + product.getId() + ", name: " + product.getName()));
+        Category electronico = new Category("Electronico");
+        Category computer = new Category("Computer");
+        Category muebles = new Category("Muebles");
+
+        Flux.just(electronico, computer, muebles)
+                .flatMap(categoryService::save)
+                .doOnNext(c -> {
+                    log.info(String.format("Category created: %1$s", c.getName()));
+                }).thenMany(
+                        Flux.just(new Product("Laptop1", 100.10, electronico),
+                                        new Product("Laptop2", 200.10, electronico),
+                                        new Product("Laptop3", 300.10, computer),
+                                        new Product("Laptop4", 400.10, computer),
+                                        new Product("Laptop5", 500.10, muebles))
+                                .flatMap(product -> {
+                                    product.setCreateAt(new Date());
+                                    return service.save(product);
+                                })
+                )
+                .subscribe(product -> log.info(
+                        String.format("Imsert Product -> id: %1$s with name: %2$s and category: %3$s",
+                                product.getId(),
+                                product.getName(),
+                                product.getCategory().getName()
+                        )
+                ));
     }
 }
