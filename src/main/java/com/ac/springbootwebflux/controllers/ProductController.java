@@ -100,8 +100,24 @@ public class ProductController {
                 log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
             }).thenReturn("redirect:/list?success=product+success");
         }
+    }
 
-
+    @GetMapping("/delete/{idProduct}")
+    private Mono<String> delete(@PathVariable String idProduct) {
+        return service.findBiId(idProduct)
+                .defaultIfEmpty(new Product())
+                .flatMap(p -> {
+                    if (p.getId() == null) {
+                        return Mono.error(new InterruptedException(String.format("No exist the product: %1$s", p.getName())));
+                    }
+                    return Mono.just(p);
+                })
+                .flatMap(p -> {
+                    log.info(String.format("Delete product: %1$s and id: %2$s", p.getName(), p.getId()));
+                    return service.delete(p);
+                })
+                .then(Mono.just("redirect:/list?success=product+remove+success"))
+                .onErrorResume(ex -> Mono.just("redirect:/list?error=not+exist+product"));
     }
 
     @GetMapping("/datadriver")
