@@ -52,7 +52,7 @@ public class ProductController {
                 .doOnNext(prod -> {
                     log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
                 })
-                .thenReturn("redirecct:/list");
+                .thenReturn("redirect:/list");
     }
 
     @GetMapping("/datadriver")
