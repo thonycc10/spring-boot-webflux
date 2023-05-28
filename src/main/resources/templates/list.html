@@ -23,6 +23,7 @@
             <td th:text="${product.getName()}"></td>
             <td th:text="${product.getPrice()}"></td>
             <td th:text="${product.getCreateAt()}"></td>
+            <td><a th:href="@{/form/} + ${product.getId()}">Edit</a></td>
         </tr>
     </tbody>
 </table>

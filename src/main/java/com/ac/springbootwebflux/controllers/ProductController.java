@@ -8,13 +8,17 @@ import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+@SessionAttributes("product")
 @Controller
 public class ProductController {
 
@@ -46,8 +50,24 @@ public class ProductController {
         return Mono.just("form");
     }
 
+    @GetMapping("/form/{idProduct}")
+    public Mono<String> EditView(@PathVariable String idProduct, Model model) {
+        Mono<Product> product = service
+                .findBiId(idProduct)
+                .doOnNext(p -> {
+                    log.info(String.format("Product: %1$s", p.getName()));
+                })
+                .defaultIfEmpty(new Product());
+
+        model.addAttribute("product", product);
+        model.addAttribute("title", "Edit Form");
+
+        return Mono.just("form");
+    }
+
     @PostMapping("/form")
-    public Mono<String> save(Product product) {
+    public Mono<String> save(Product product, SessionStatus sessionStatus) {
+        sessionStatus.isComplete();
         return service.save(product)
                 .doOnNext(prod -> {
                     log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));

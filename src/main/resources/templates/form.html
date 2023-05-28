@@ -10,6 +10,8 @@
     <a th:href="@{/list}">Return</a>
 <!--    form>(div>label+div>input)*4-->
     <form th:action="@{/form}" method="post" th:object="${product}">
+<!--        en ves de usar esto usa el @SessionAttributes("product") e-->
+<!--        <input type="hidden" th:if="${product.id != null}" th:field="*{id}" >-->
         <div><label for="name">Name</label>
             <div><input id="name"  type="text" th:field="*{name}"></div>
         </div>
