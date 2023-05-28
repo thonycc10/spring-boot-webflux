@@ -2,11 +2,13 @@ package com.ac.springbootwebflux.controllers;
 
 import com.ac.springbootwebflux.documents.Product;
 import com.ac.springbootwebflux.services.ProductService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Date;
 
 @SessionAttributes("product")
 @Controller
@@ -53,12 +56,9 @@ public class ProductController {
 
     @GetMapping("/form/{idProduct}")
     public Mono<String> EditView(@PathVariable String idProduct, Model model) {
-        Mono<Product> product = service
-                .findBiId(idProduct)
-                .doOnNext(p -> {
-                    log.info(String.format("Product: %1$s", p.getName()));
-                })
-                .defaultIfEmpty(new Product());
+        Mono<Product> product = service.findBiId(idProduct).doOnNext(p -> {
+            log.info(String.format("Product: %1$s", p.getName()));
+        }).defaultIfEmpty(new Product());
 
         model.addAttribute("product", product);
         model.addAttribute("title", "Edit Form");
@@ -69,32 +69,39 @@ public class ProductController {
 
     @GetMapping("/form/v2/{idProduct}")
     public Mono<String> EditViewV2(@PathVariable String idProduct, Model model) {
-        return service.findBiId(idProduct)
-                .doOnNext(p -> {
-                    log.info(String.format("Product: %1$s", p.getName()));
-                    model.addAttribute("product", p);
-                    model.addAttribute("title", "Edit Product");
-                    model.addAttribute("btnSumit", "Guardar");
-                })
-                .defaultIfEmpty(new Product())
-                .flatMap(p -> {
-                    if (p.getId() == null) {
-                        return Mono.error(new InterruptedException("No exist the product"));
-                    }
-                    return Mono.just(p);
-                })
-                .then(Mono.just("form"))
-                .onErrorResume(ex -> Mono.just("redirect:/list?error=no+exist+the+product"));
+        return service.findBiId(idProduct).doOnNext(p -> {
+            log.info(String.format("Product: %1$s", p.getName()));
+            model.addAttribute("product", p);
+            model.addAttribute("title", "Edit Product");
+            model.addAttribute("btnSumit", "Guardar");
+        }).defaultIfEmpty(new Product()).flatMap(p -> {
+            if (p.getId() == null) {
+                return Mono.error(new InterruptedException("No exist the product"));
+            }
+            return Mono.just(p);
+        }).then(Mono.just("form")).onErrorResume(ex -> Mono.just("redirect:/list?error=no+exist+the+product"));
     }
 
     @PostMapping("/form")
-    public Mono<String> save(Product product, SessionStatus sessionStatus) {
-        sessionStatus.isComplete();
-        return service.save(product)
-                .doOnNext(prod -> {
-                    log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
-                })
-                .thenReturn("redirect:/list");
+    public Mono<String> save(@Valid Product product, BindingResult result, Model model, SessionStatus sessionStatus) {
+        // bindinresult debe estar siempre al costado del objeto clase
+
+        if (result.hasErrors()) {
+            model.addAttribute("product", product);
+            model.addAttribute("title", "Edit Product");
+            model.addAttribute("btnSumit", "Guardar");
+            return Mono.just("form");
+        } else {
+            sessionStatus.isComplete();
+            if (product.getCreateAt() == null) {
+                product.setCreateAt(new Date());
+            }
+            return service.save(product).doOnNext(prod -> {
+                log.info(String.format("Product saved: %1$s, id: %2$s", prod.getName(), prod.getId()));
+            }).thenReturn("redirect:/list?success=product+success");
+        }
+
+
     }
 
     @GetMapping("/datadriver")
@@ -103,7 +110,7 @@ public class ProductController {
 
         products.subscribe(product -> log.info(product.getName()));
 
-        model.addAttribute("products", new ReactiveDataDriverContextVariable(products, 2 ));
+        model.addAttribute("products", new ReactiveDataDriverContextVariable(products, 2));
         model.addAttribute("title", "List products");
 
         return "list";
