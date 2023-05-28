@@ -46,6 +46,25 @@ public class ProductController {
         return categoryService.findAll();
     }
 
+    @GetMapping("/ver/{id}")
+    public Mono<String> view(Model model, @PathVariable String id) {
+        return service.findBiId(id)
+                .doOnNext(p -> {
+                    model.addAttribute("product", p);
+                    model.addAttribute("title", "Detail Product");
+                })
+                .switchIfEmpty(Mono.just(new Product()))
+                .flatMap(p -> {
+                    if (p.getId() == null) {
+                        return Mono.error(new InterruptedException("No exist product"));
+                    }
+                    return Mono.just(p);
+                })
+                .then(Mono.just("view"))
+                .onErrorResume(ex -> Mono.just("redirect:/list?error=not+exist+product")
+                );
+    }
+
     @GetMapping({"/list", "/"})
     public String list(Model model) {
         Flux<Product> products = service.findAllWithNameUpperCase();
